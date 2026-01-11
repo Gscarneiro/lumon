@@ -72,6 +72,7 @@ CREATE TABLE scores (
     classification_id   UUID NOT NULL REFERENCES classifications(id),
     points              INT NOT NULL,
     tags                TEXT[] NOT NULL,
+    temper_vector       JSONB NOT NULL DEFAULT '{}'::JSONB,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

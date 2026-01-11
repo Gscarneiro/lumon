@@ -14,7 +14,7 @@ impl Config {
         dotenv().ok();
 
         Self {
-            database_url: std::env::var("DB_URL").expect("DB_URL must be set"),
+            database_url: std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
             environment: std::env::var("ENVIRONMENT").expect("ENVIRONMENT must be set"),
         }
     }
