@@ -55,7 +55,7 @@ impl SessionRepository {
         let result = query("
             UPDATE sessions
             SET ended_at = NOW()
-            WHERE id = $1
+            WHERE id = $1 AND ended_at IS NULL
         ")
         .bind(session_id)
         .execute(&self.pool)

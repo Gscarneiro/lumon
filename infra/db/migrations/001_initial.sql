@@ -1,7 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Status enums
-CREATE TYPE file_status AS ENUM ('open', 'completed', 'aborted');
 CREATE TYPE bin_status  AS ENUM ('open', 'full');
 
 -- Users
@@ -22,21 +21,16 @@ CREATE TABLE sessions (
     ended_at    TIMESTAMPTZ NULL
 );
 
-CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE UNIQUE INDEX uniq_active_session ON sessions(user_id) WHERE ended_at IS NULL;
 
 -- Files (Cold Harbor)
 CREATE TABLE files (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    session_id      UUID NOT NULL REFERENCES sessions(id),
     name            TEXT NOT NULL,
     seed            BIGINT NOT NULL,
     target_per_bin  INT NOT NULL,
-    status          file_status NOT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
-CREATE INDEX idx_files_session_id ON files(session_id);
-CREATE INDEX idx_files_status ON files(status);
 
 -- Bins (5 per file)
 CREATE TABLE bins (
@@ -57,26 +51,21 @@ CREATE INDEX idx_bins_status ON bins(status);
 -- Classifications
 CREATE TABLE classifications (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    bin_id      UUID NOT NULL REFERENCES bins(id),
     user_id     UUID NOT NULL REFERENCES users(id),
+    session_id  UUID NOT NULL REFERENCES sessions(id),
+    file_id     UUID NOT NULL REFERENCES files(id),
+    bin_id      UUID NOT NULL REFERENCES bins(id),
     numbers     JSONB NOT NULL,
+    score       INT NOT NULL,
+    tags        TEXT[] NOT NULL,
+    tempers     JSONB NOT NULL DEFAULT '{}'::JSONB,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_classifications_bin_id ON classifications(bin_id);
 CREATE INDEX idx_classifications_user_id ON classifications(user_id);
-
--- Scores
-CREATE TABLE scores (
-    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    classification_id   UUID NOT NULL REFERENCES classifications(id),
-    points              INT NOT NULL,
-    tags                TEXT[] NOT NULL,
-    temper_vector       JSONB NOT NULL DEFAULT '{}'::JSONB,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_scores_classification_id ON scores(classification_id);
+CREATE INDEX idx_classifications_session_id ON classifications(session_id);
+CREATE INDEX idx_classifications_file_id ON classifications(file_id);
+CREATE INDEX idx_classifications_bin_id ON classifications(bin_id);
 
 -- Events
 CREATE TABLE events (
