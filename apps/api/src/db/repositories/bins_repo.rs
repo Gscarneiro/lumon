@@ -20,11 +20,9 @@ impl BinRepository {
             let bin = query_as::<_, Bin>("
                 INSERT INTO bins (file_id, bin_index, filled_count, status)
                 VALUES ($1, $2, 0, 'open')
-                RETURNING id, file_id, bin_index, filled_count, status, created_at
             ")
             .bind(file_id)
             .bind(bin_index)
-            .fetch_one(&self.pool)
             .await?;
         }
 
