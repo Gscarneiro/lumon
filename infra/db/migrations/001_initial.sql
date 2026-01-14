@@ -26,7 +26,7 @@ CREATE UNIQUE INDEX uniq_active_session ON sessions(user_id) WHERE ended_at IS N
 -- Files (Cold Harbor)
 CREATE TABLE files (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name            TEXT NOT NULL,
+    name            TEXT NOT NULL UNIQUE,
     seed            BIGINT NOT NULL,
     target_per_bin  INT NOT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
