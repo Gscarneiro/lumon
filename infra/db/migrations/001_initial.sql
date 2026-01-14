@@ -58,7 +58,6 @@ CREATE TABLE classifications (
     numbers     JSONB NOT NULL,
     score       INT NOT NULL,
     tags        TEXT[] NOT NULL,
-    tempers     JSONB NOT NULL DEFAULT '{}'::JSONB,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
