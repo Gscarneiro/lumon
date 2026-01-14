@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Status enums
-CREATE TYPE bin_status  AS ENUM ('open', 'full');
+CREATE TYPE bin_status AS ENUM ('open', 'full');
 
 -- Users
 CREATE TABLE users (
@@ -20,10 +20,10 @@ CREATE TABLE sessions (
     started_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     ended_at    TIMESTAMPTZ NULL
 );
+--
 
 CREATE UNIQUE INDEX uniq_active_session ON sessions(user_id) WHERE ended_at IS NULL;
-
--- Files (Cold Harbor)
+ Files (Cold Harbor)
 CREATE TABLE files (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name            TEXT NOT NULL UNIQUE,

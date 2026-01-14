@@ -29,6 +29,22 @@ pub struct File {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BinStatus {
+    Open,
+    Full,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Bin {
+    pub id: Uuid,
+    pub file_id: Uuid,
+    pub bin_index: i32,
+    pub filled_count: i32,
+    pub status: BinStatus,
+    pub created_at: DateTime<Utc>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Classification {
     pub id: Uuid,
