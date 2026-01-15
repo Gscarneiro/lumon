@@ -1,25 +1,33 @@
-#![allow(unused)] 
-
-use sqlx::postgres::{PgPoolOptions, PgRow};
-use sqlx::{FromRow, Row};
+use tokio::net::TcpListener;
+use sqlx::postgres::PgPoolOptions;
 
 mod config;
+mod app_state;
+mod http;
+
 use config::Config;
+use app_state::AppState;
+use http::router::create_router;
 
 #[tokio::main]
 async fn main() {
     let config = Config::load();
 
     let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&config.database_url)
-        .await
-        .expect("Failed to create pool.");
+    .max_connections(5)
+    .connect(&config.database_url)
+    .await
+    .expect("Failed to create pool.");
 
-    let row: PgRow = sqlx::query("SELECT 'Connected to Postgres' AS message")
-        .fetch_one(&pool)
-        .await
-        .expect("Failed to fetch row.");
+    let state = AppState::new(pool);
 
-        println!("{}", row.get::<&str, _>(0));
+    let app = create_router(state);
+
+    let listener = TcpListener::bind("127.0.0.1:3000")
+    .await
+    .expect("Failed to bind to address.");
+
+    axum::serve(listener, app)
+    .await
+    .expect("Server Error");
 }
