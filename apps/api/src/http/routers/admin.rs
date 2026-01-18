@@ -6,11 +6,8 @@ use axum::{
 use crate::app_state::AppState;
 use crate::http::handlers::health::health_handler;
 
-use crate::http::routers::{auth::auth_router};
-
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health_handler))
-        .nest("/auth", auth_router())
         .with_state(state)
 }
