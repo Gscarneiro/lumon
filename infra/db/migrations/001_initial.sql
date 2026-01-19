@@ -20,10 +20,10 @@ CREATE TABLE sessions (
     started_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     ended_at    TIMESTAMPTZ NULL
 );
---
 
 CREATE UNIQUE INDEX uniq_active_session ON sessions(user_id) WHERE ended_at IS NULL;
- Files (Cold Harbor)
+
+--Files
 CREATE TABLE files (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name            TEXT NOT NULL UNIQUE,
