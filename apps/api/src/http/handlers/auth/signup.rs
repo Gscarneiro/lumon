@@ -1,12 +1,13 @@
 use axum::{
-    extract::State,
+    extract::{State, Json},
     http::StatusCode,
-    response::IntoResponse,
 };
 
 use crate::app_state::AppState;
 
-pub async fn signup_handler(State(_state): State<AppState>) -> impl IntoResponse {
-    //do signup shit
-    (StatusCode::OK, "ok")
+pub async fn signup_handler(State(state): State<AppState>, Json(payload): Json<crate::http::models::signup_request::SignupRequest>) -> StatusCode {
+    match state.auth_service.signup(payload).await {
+        Ok(_) => StatusCode::CREATED,
+        Err(_) => StatusCode::CONFLICT,
+    }
 }

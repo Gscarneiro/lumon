@@ -1,3 +1,1 @@
-fn main() {
-    println!("Hello, world!");
-}
+pub mod auth_service;

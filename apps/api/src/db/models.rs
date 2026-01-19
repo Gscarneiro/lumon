@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
+use sqlx::FromRow;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct User {
     pub id: Uuid,
     pub innie_name: String,
@@ -12,7 +13,7 @@ pub struct User {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Session {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -20,7 +21,7 @@ pub struct Session {
     pub ended_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct File {
     pub id: Uuid,
     pub name: String,
@@ -35,7 +36,7 @@ pub enum BinStatus {
     Full,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Bin {
     pub id: Uuid,
     pub file_id: Uuid,
@@ -45,7 +46,7 @@ pub struct Bin {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Classification {
     pub id: Uuid,
     pub user_id: Uuid,

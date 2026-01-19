@@ -3,6 +3,7 @@ use sqlx::{query_as, query};
 use crate::db::models::User;
 use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct UserRepository {
     pool: PgPool
 }
@@ -66,14 +67,14 @@ impl UserRepository {
         Ok(result.rows_affected() > 0)
     }
 
-    pub async fn email_exists(&self, email: &str) -> Result<bool, Error> {
-        let count: (i64,) = query_as::<_, (i64,)>("
-            SELECT COUNT(*) FROM users WHERE email = $1
-        ")
-        .bind(email)
+    pub async fn email_exists(&self, email: &str) -> Result<bool, sqlx::Error> {
+        let exists = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
+            email
+        )
         .fetch_one(&self.pool)
         .await?;
 
-        Ok(count.0 > 0)
+        Ok(exists.unwrap_or(false))
     }
 }

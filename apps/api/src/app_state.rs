@@ -2,13 +2,16 @@
 
 use sqlx::PgPool;
 
+use crate::services::auth_service::AuthService;
+
 #[derive(Clone)]
 pub struct AppState {
-    pub db_pool: PgPool,
+    pub auth_service: AuthService,
+
 }
 
 impl AppState {
-    pub fn new(db_pool: PgPool) -> Self {
-        Self { db_pool }
+    pub fn new(auth_service: AuthService) -> Self {
+        Self { auth_service }
     }
 }

@@ -4,10 +4,15 @@ use sqlx::postgres::PgPoolOptions;
 mod config;
 mod app_state;
 mod http;
+mod services;
+mod db;
 
 use config::Config;
 use app_state::AppState;
 use http::router::create_router;
+
+use services::auth_service::AuthService;
+use db::repositories::users_repo::UserRepository;
 
 #[tokio::main]
 async fn main() {
@@ -19,7 +24,7 @@ async fn main() {
     .await
     .expect("Failed to create pool.");
 
-    let state = AppState::new(pool);
+    let state = AppState::new(AuthService::new(UserRepository::new(pool.clone())));
 
     let app = create_router(state);
 
