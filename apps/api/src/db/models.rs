@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
-use sqlx::FromRow;
+use sqlx::{FromRow, Type};
 
 #[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct User {
@@ -30,7 +30,8 @@ pub struct File {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[sqlx(type_name = "bin_status", rename_all = "lowercase")]
 pub enum BinStatus {
     Open,
     Full,

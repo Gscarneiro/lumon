@@ -2,6 +2,7 @@ use sqlx::{PgPool, Error, query_as, query};
 use crate::db::models::Bin;
 use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct BinRepository {
     pool: PgPool
 }
@@ -17,12 +18,13 @@ impl BinRepository {
 
         for bin_index in 0..quantity {
 
-            let bin = query_as::<_, Bin>("
+            query("
                 INSERT INTO bins (file_id, bin_index, filled_count, status)
                 VALUES ($1, $2, 0, 'open')
             ")
             .bind(file_id)
             .bind(bin_index)
+            .execute(&self.pool)
             .await?;
         }
 
@@ -63,6 +65,7 @@ impl BinRepository {
             WHERE id = $1 and status = 'open'
         ")
         .bind(bin_id)
+        .execute(&self.pool)
         .await?;
 
         Ok(result.rows_affected() > 0)

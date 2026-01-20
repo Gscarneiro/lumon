@@ -13,8 +13,18 @@ use config::Config;
 use app_state::AppState;
 use http::router::create_router;
 
-use services::{auth_service::AuthService, hash_service::HashService, token_service::TokenService};
-use db::repositories::users_repo::UserRepository;
+use services::{
+    auth_service::AuthService, 
+    hash_service::HashService, 
+    token_service::TokenService,
+    file_service::FileService,
+};
+
+use db::repositories::{
+    users_repo::UserRepository,
+    files_repo::FileRepository,
+    bins_repo::BinRepository
+};
 
 #[tokio::main]
 async fn main() {
@@ -41,10 +51,15 @@ fn init_state(pool: PgPool, jwt_secret: String) -> AppState {
 
     let user_repo = UserRepository::new(pool.clone());
     let hash_service = HashService::new();
-    let token_service = TokenService::new(jwt_secret);
     let auth_service = AuthService::new(user_repo, hash_service);
+    
+    let token_service = TokenService::new(jwt_secret);
 
-    AppState::new(auth_service, token_service)
+    let file_repo = FileRepository::new(pool.clone());
+    let bins_repo = BinRepository::new(pool.clone());
+    let file_service = FileService::new(file_repo, bins_repo);
+
+    AppState::new(auth_service, token_service, file_service)
 }
 
 async fn serve(app: Router) {

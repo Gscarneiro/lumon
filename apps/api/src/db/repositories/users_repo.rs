@@ -1,7 +1,7 @@
 use sqlx::{PgPool, Error};
-use sqlx::{query_as, query};
+use sqlx::{query_as};
 use crate::db::models::User;
-use uuid::Uuid;
+//use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct UserRepository {
@@ -41,31 +41,31 @@ impl UserRepository {
         Ok(user)
     }
 
-    pub async fn get_user_by_id(&self, user_id: Uuid) -> Result<Option<User>, Error> {
-        let user = query_as::<_, User>("
-            SELECT id, email, innie_name, password_hash, is_active, created_at
-            FROM users
-            WHERE id = $1
-        ")
-        .bind(user_id)
-        .fetch_optional(&self.pool)
-        .await?;
+    // pub async fn get_user_by_id(&self, user_id: Uuid) -> Result<Option<User>, Error> {
+    //     let user = query_as::<_, User>("
+    //         SELECT id, email, innie_name, password_hash, is_active, created_at
+    //         FROM users
+    //         WHERE id = $1
+    //     ")
+    //     .bind(user_id)
+    //     .fetch_optional(&self.pool)
+    //     .await?;
 
-        Ok(user)
-    }
+    //     Ok(user)
+    // }
 
-    pub async fn deactivate_user(&self, user_id: uuid::Uuid) -> Result<bool, Error> {
-        let result = query("
-            UPDATE users
-            SET is_active = FALSE
-            WHERE id = $1
-        ")
-        .bind(user_id)
-        .execute(&self.pool)
-        .await?;
+    // pub async fn deactivate_user(&self, user_id: uuid::Uuid) -> Result<bool, Error> {
+    //     let result = query("
+    //         UPDATE users
+    //         SET is_active = FALSE
+    //         WHERE id = $1
+    //     ")
+    //     .bind(user_id)
+    //     .execute(&self.pool)
+    //     .await?;
 
-        Ok(result.rows_affected() > 0)
-    }
+    //     Ok(result.rows_affected() > 0)
+    // }
 
     pub async fn email_exists(&self, email: &str) -> Result<bool, sqlx::Error> {
         let exists = sqlx::query_scalar!(

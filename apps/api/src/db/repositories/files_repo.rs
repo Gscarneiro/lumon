@@ -2,6 +2,7 @@ use sqlx::{PgPool, Error, query_as};
 use crate::db::models::File;
 use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct FileRepository {
     pool: PgPool
 }
