@@ -13,7 +13,7 @@ use config::Config;
 use app_state::AppState;
 use http::router::create_router;
 
-use services::{{auth_service::AuthService, hash_service::HashService}};
+use services::{auth_service::AuthService, hash_service::HashService, token_service::TokenService};
 use db::repositories::users_repo::UserRepository;
 
 #[tokio::main]
@@ -22,7 +22,7 @@ async fn main() {
 
     let pool = init_pool(&config.database_url).await;
 
-    let state = init_state(pool);
+    let state = init_state(pool, config.jwt_secret);
 
     let app = create_router(state);
 
@@ -37,13 +37,14 @@ async fn init_pool(database_url: &str) -> PgPool {
         .expect("Failed to create pool.")
 }
 
-fn init_state(pool: PgPool) -> AppState {
+fn init_state(pool: PgPool, jwt_secret: String) -> AppState {
 
     let user_repo = UserRepository::new(pool.clone());
     let hash_service = HashService::new();
+    let token_service = TokenService::new(jwt_secret);
     let auth_service = AuthService::new(user_repo, hash_service);
 
-    AppState::new(auth_service)
+    AppState::new(auth_service, token_service)
 }
 
 async fn serve(app: Router) {

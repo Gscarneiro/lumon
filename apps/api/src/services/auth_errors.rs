@@ -1,6 +1,7 @@
 #[derive(Debug)]
-pub enum SignupError {
+pub enum AuthErrors {
     EmailAlreadyExists,
+    InvalidCredentials,
     HashingFailed,
     DatabaseError,
 }
