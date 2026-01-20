@@ -44,11 +44,7 @@ pub async fn login_handler(State(state): State<AppState>, Json(payload): Json<Lo
                 Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
             }
         }
-
-        Err(AuthErrors::InvalidCredentials) => {
-            StatusCode::UNAUTHORIZED.into_response()
-        }
-
+        Err(AuthErrors::InvalidCredentials) => StatusCode::UNAUTHORIZED.into_response(),
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }
