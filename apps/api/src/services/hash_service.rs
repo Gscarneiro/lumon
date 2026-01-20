@@ -24,9 +24,7 @@ impl HashService {
     pub fn hash(&self, password: &str) -> Result<String, PasswordHashError> {
         let salt = SaltString::generate(&mut OsRng);
 
-        let argon2 = Argon2::default();
-
-        let password_hash = argon2
+        let password_hash = self.argon2
             .hash_password(password.as_bytes(), &salt)?
             .to_string();
 
