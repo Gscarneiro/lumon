@@ -1,5 +1,7 @@
 use tokio::net::TcpListener;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::{PgPool};
+use axum::{Router};
 
 mod config;
 mod app_state;
@@ -11,22 +13,40 @@ use config::Config;
 use app_state::AppState;
 use http::router::create_router;
 
-use services::auth_service::AuthService;
+use services::{{auth_service::AuthService, hash_service::HashService}};
 use db::repositories::users_repo::UserRepository;
 
 #[tokio::main]
 async fn main() {
     let config = Config::load();
 
-    let pool = PgPoolOptions::new()
-    .max_connections(5)
-    .connect(&config.database_url)
-    .await
-    .expect("Failed to create pool.");
+    let pool = init_pool(&config.database_url).await;
 
-    let state = AppState::new(AuthService::new(UserRepository::new(pool.clone())));
+    let state = init_state(pool);
 
     let app = create_router(state);
+
+    serve(app).await;
+}
+
+async fn init_pool(database_url: &str) -> PgPool {
+    PgPoolOptions::new()
+        .max_connections(5)
+        .connect(database_url)
+        .await
+        .expect("Failed to create pool.")
+}
+
+fn init_state(pool: PgPool) -> AppState {
+
+    let user_repo = UserRepository::new(pool.clone());
+    let hash_service = HashService::new();
+    let auth_service = AuthService::new(user_repo, hash_service);
+
+    AppState::new(auth_service)
+}
+
+async fn serve(app: Router) {
 
     let listener = TcpListener::bind("127.0.0.1:3000")
     .await
