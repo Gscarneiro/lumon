@@ -2,6 +2,7 @@ use std::result;
 
 use crate::db::repositories::users_repo::UserRepository;
 use crate::services::hash_service::HashService;
+use super::auth_errors::SignupError;
 
 #[derive(Clone)]
 pub struct AuthService {
@@ -11,25 +12,24 @@ pub struct AuthService {
 
 impl AuthService {
     pub fn new(user_repo: UserRepository, hash_service: HashService) -> Self {
-        Self { user_repo, hash_service }
+        Self { 
+            user_repo, 
+            hash_service 
+        }
     }
 
     pub async fn signup(&self, email: &str, innie_name: &str, password: &str) -> result::Result<(), SignupError> {
-        if self.user_repo.email_exists(&email).await.unwrap_or(false) {
-            // Handle error: email already exists
+
+        let exists = self.user_repo.email_exists(&email).await.map_err(|_| SignupError::DatabaseError)?;
+
+        if exists {
             return Err(SignupError::EmailAlreadyExists);
         }
 
-        let password_hash = self.hash_service.hash(password).await;
+        let password_hash = self.hash_service.hash(password).map_err(|_| SignupError::HashingFailed)?;
 
-        self.user_repo.create_user(email, &innie_name, &password_hash).await.unwrap();
+        self.user_repo.create_user(email, &innie_name, &password_hash).await.map_err(|_| SignupError::DatabaseError)?;
 
         Ok(())
     }
-}
-
-//Achar lugar melhor pra colocar isso
-#[derive(Debug)]
-pub enum SignupError {
-    EmailAlreadyExists
 }

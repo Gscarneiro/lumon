@@ -1,28 +1,41 @@
 use argon2::{
-    password_hash::{ rand_core::OsRng, PasswordHasher, SaltString, PasswordHash, PasswordVerifier },
-    Argon2
+    Argon2, password_hash::{ 
+        PasswordHash, 
+        PasswordHasher, 
+        PasswordVerifier,
+        SaltString,
+        Error as PasswordHashError,
+        rand_core::OsRng 
+    }
 };
 
 #[derive(Clone)]
 pub struct HashService {
+    argon2: Argon2<'static>,
 }
 
 impl HashService {
     pub fn new() -> Self {
-        Self { }
+        Self { 
+            argon2: Argon2::default() 
+        }
     }
 
-    pub async fn hash(&self, password: &str) -> String {
+    pub fn hash(&self, password: &str) -> Result<String, PasswordHashError> {
         let salt = SaltString::generate(&mut OsRng);
 
         let argon2 = Argon2::default();
 
-        argon2.hash_password(password.as_bytes(), &salt).unwrap().to_string()
+        let password_hash = argon2
+            .hash_password(password.as_bytes(), &salt)?
+            .to_string();
+
+        Ok(password_hash)
     }
 
-    pub async fn verify(&self, password: &str, password_hash: &str) -> bool {
-        let parsed_hash = PasswordHash::new(password_hash).unwrap();
+    pub fn verify(&self, password: &str, password_hash: &str) -> Result<bool, PasswordHashError> {
+        let parsed_hash = PasswordHash::new(password_hash)?;
 
-        Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok()
+        Ok(Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok())
     }
 }
