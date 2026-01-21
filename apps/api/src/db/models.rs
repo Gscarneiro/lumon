@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use sqlx::{FromRow, Type};
+use serde_json::Value;
 
 #[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct User {
@@ -26,7 +27,10 @@ pub struct File {
     pub id: Uuid,
     pub name: String,
     pub seed: i64,
-    pub target_per_bin: i32,
+    pub target_profile: Value,
+    pub min_fill: f64,
+    pub tolerance: f64,
+    pub dominance_gap: Option<f64>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -42,9 +46,11 @@ pub struct Bin {
     pub id: Uuid,
     pub file_id: Uuid,
     pub bin_index: i32,
-    pub filled_count: i32,
     pub status: BinStatus,
+    pub temper_state: Value,
+    pub dominant_temper: Option<String>,
     pub created_at: DateTime<Utc>,
+    pub closed_at: Option<DateTime<Utc>>,
 }
 
 #[derive(FromRow, Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -52,10 +58,9 @@ pub struct Classification {
     pub id: Uuid,
     pub user_id: Uuid,
     pub session_id: Uuid,
-    pub file_id: Uuid,
     pub bin_id: Uuid,
-    pub numbers: serde_json::Value,
-    pub score: i32,
-    pub tags: Vec<String>,
+    pub numbers: Value,
+    pub temper_vector: Value,
+    pub tags: Option<Vec<String>>,
     pub created_at: DateTime<Utc>,
 }

@@ -25,21 +25,26 @@ CREATE UNIQUE INDEX uniq_active_session ON sessions(user_id) WHERE ended_at IS N
 
 --Files
 CREATE TABLE files (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name            TEXT NOT NULL UNIQUE,
-    seed            BIGINT NOT NULL,
-    target_per_bin  INT NOT NULL,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    seed BIGINT NOT NULL,
+    target_profile JSONB NOT NULL,
+    min_fill DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+    tolerance DOUBLE PRECISION NOT NULL DEFAULT 0.1,
+    dominance_gap DOUBLE PRECISION NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Bins (5 per file)
 CREATE TABLE bins (
-    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    file_id       UUID NOT NULL REFERENCES files(id),
-    bin_index     INT NOT NULL,
-    filled_count  INT NOT NULL DEFAULT 0,
-    status        bin_status NOT NULL,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    file_id UUID NOT NULL REFERENCES files(id),
+    bin_index INT NOT NULL,
+    status bin_status NOT NULL DEFAULT 'open',
+    temper_state JSONB NOT NULL DEFAULT '{"woe": 0, "frolic": 0, "dread": 0, "malice": 0}',
+    dominant_temper TEXT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    closed_at TIMESTAMPTZ NULL,
 
     CONSTRAINT unique_file_bin UNIQUE (file_id, bin_index),
     CONSTRAINT valid_bin_index CHECK (bin_index BETWEEN 0 AND 4)
@@ -50,16 +55,16 @@ CREATE INDEX idx_bins_status ON bins(status);
 
 -- Classifications
 CREATE TABLE classifications (
-    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id     UUID NOT NULL REFERENCES users(id),
-    session_id  UUID NOT NULL REFERENCES sessions(id),
-    file_id     UUID NOT NULL REFERENCES files(id),
-    bin_id      UUID NOT NULL REFERENCES bins(id),
-    numbers     JSONB NOT NULL,
-    score       INT NOT NULL,
-    tags        TEXT[] NOT NULL,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    session_id UUID NOT NULL REFERENCES sessions(id),
+    bin_id UUID NOT NULL REFERENCES bins(id),
+    numbers JSONB NOT NULL,
+    temper_vector JSONB NOT NULL,
+    tags TEXT[] NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 
 CREATE INDEX idx_classifications_user_id ON classifications(user_id);
 CREATE INDEX idx_classifications_session_id ON classifications(session_id);
