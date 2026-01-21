@@ -1,7 +1,8 @@
-use sqlx::{PgPool, Error, query_as};
-use crate::db::models::File;
 use uuid::Uuid;
+use serde_json::Value;
+use sqlx::{PgPool, Error, query_as};
 
+use crate::db::models::File;
 #[derive(Clone)]
 pub struct FileRepository {
     pool: PgPool
@@ -12,15 +13,18 @@ impl FileRepository {
         Self { pool }
     }
 
-    pub async fn create_file(&self, name: &str, seed: i64, target_per_bin: i32) -> Result<File, Error> {
+    pub async fn create_file(&self, name: &str, seed: i64, min_fill: f64, tolerance: f64, dominance_gap: Option<f64>, target_profile: Value) -> Result<File, Error> {
         let file = query_as::<_, File>("
-            INSERT INTO files (name, seed, target_per_bin)
-            VALUES ($1, $2, $3)
-            RETURNING id, name, seed, target_per_bin, created_at
+            INSERT INTO files (name, seed, target_profile, min_fill, tolerance, dominance_gap)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, name, seed, target_profile, min_fill, tolerance, dominance_gap, created_at
         ")
         .bind(name)
         .bind(seed)
-        .bind(target_per_bin)
+        .bind(target_profile)
+        .bind(min_fill)
+        .bind(tolerance)
+        .bind(dominance_gap)
         .fetch_one(&self.pool)
         .await?;
 

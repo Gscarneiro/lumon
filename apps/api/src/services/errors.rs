@@ -5,3 +5,9 @@ pub enum AuthErrors {
     HashingFailed,
     DatabaseError,
 }
+
+#[derive(Debug)]
+pub enum FileErrors {
+    NameAlreadyExists,
+    DatabaseError,
+}

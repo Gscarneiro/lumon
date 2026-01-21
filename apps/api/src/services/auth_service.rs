@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::db::repositories::users_repo::UserRepository;
 use crate::services::hash_service::HashService;
-use super::auth_errors::AuthErrors;
+use super::errors::AuthErrors;
 
 #[derive(Clone)]
 pub struct AuthService {

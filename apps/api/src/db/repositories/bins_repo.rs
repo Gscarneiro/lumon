@@ -12,15 +12,18 @@ impl BinRepository {
         Self { pool }
     }
 
-    pub async fn create_bins(&self, file_id: Uuid, quantity: Option<i32>) -> Result<(), Error> {
+    pub async fn create_bins(&self, file_id: &Uuid, quantity: Option<i32>) -> Result<(), Error> {
         
-        let quantity = quantity.unwrap_or(5);
+        let quantity = match quantity {
+            Some(q) => q,
+            None => 5,
+        };
 
         for bin_index in 0..quantity {
 
             query("
-                INSERT INTO bins (file_id, bin_index, filled_count, status)
-                VALUES ($1, $2, 0, 'open')
+                INSERT INTO bins (file_id, bin_index)
+                VALUES ($1, $2)
             ")
             .bind(file_id)
             .bind(bin_index)

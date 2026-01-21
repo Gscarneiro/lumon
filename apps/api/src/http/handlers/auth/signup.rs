@@ -5,7 +5,7 @@ use axum::{
 
 use crate::{
     app_state::AppState,
-    services::auth_errors::AuthErrors,
+    services::errors::AuthErrors,
 };
 
 

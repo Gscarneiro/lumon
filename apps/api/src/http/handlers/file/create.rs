@@ -1,50 +1,38 @@
 use axum::{
     extract::{Json, State},
-    http::StatusCode,
     response::IntoResponse,
 };
 
 use crate::{
     app_state::AppState,
-    services::auth_errors::AuthErrors
 };
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 
 #[derive(Deserialize)]
-pub struct LoginRequest {
-    pub email: String,
-    pub password: String,
+pub struct CreateFileRequest {
+    pub name: String,
+    pub seed: i64,
+    pub min_fill: f64,
+    pub tolerance: f64,
+    pub target_profile: TargetProfile,
 }
 
-#[derive(Serialize)]
-struct LoginResponse {
-    access_token: String,
-    token_type: &'static str,
-    expires_in: u64,
+#[derive(Deserialize)]
+pub struct TargetProfile {
+    pub woe: f64,
+    pub frolic: f64,
+    pub dread: f64,
+    pub malice: f64,
 }
 
-pub async fn create_file_handler(State(state): State<AppState>, Json(payload): Json<LoginRequest>) -> impl IntoResponse {
-    match state
-        .auth_service
-        .login(&payload.email, &payload.password)
-        .await
-    {
-        Ok(user_id) => {
-            match state.token_service.generate(&user_id.to_string()) {
-                Ok(token) => {
-                    let body = LoginResponse {
-                        access_token: token,
-                        token_type: "Bearer",
-                        expires_in: 900,
-                    };
-
-                    (StatusCode::OK, Json(body)).into_response()
-                }
-                Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            }
-        }
-        Err(AuthErrors::InvalidCredentials) => StatusCode::UNAUTHORIZED.into_response(),
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-    }
+pub async fn create_file_handler(State(state): State<AppState>, Json(payload): Json<CreateFileRequest>) -> impl IntoResponse {
+    state.file_service.create_file(&payload.name, payload.seed, payload.min_fill, payload.tolerance, None,
+        serde_json::json!({
+            "woe": payload.target_profile.woe,
+            "frolic": payload.target_profile.frolic,
+            "dread": payload.target_profile.dread,
+            "malice": payload.target_profile.malice,
+        })
+    ).await;
 }

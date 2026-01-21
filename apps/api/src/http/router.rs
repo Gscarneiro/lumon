@@ -12,6 +12,6 @@ pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health_handler))
         .nest("/auth", auth_router())
-        .nest("/files", file_router())
+        .nest("/file", file_router())
         .with_state(state)
 }
